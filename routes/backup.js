@@ -3,13 +3,14 @@ const router = express.Router();
 const { exec } = require("child_process");
 const multer = require("multer");
 const path = require("path");
+const authenticateAdmin = require("../middleware/auth");
 require("dotenv").config();
 
 const BACKUP_FOLDER = path.join(__dirname, "..", "backups");
 const upload = multer({ dest: BACKUP_FOLDER });
 
 // Manual backup
-router.get("/backup", (req, res) => {
+router.get("/backup", authenticateAdmin, (req, res) => {
   const fileName = `backup_${Date.now()}.sql`;
   const filePath = path.join(BACKUP_FOLDER, fileName);
   const mysqldumpPath = `"C:\\xampp\\mysql\\bin\\mysqldump.exe"`;
@@ -25,7 +26,7 @@ router.get("/backup", (req, res) => {
 });
 
 // Restore from uploaded file
-router.post("/restore", upload.single("backupFile"), (req, res) => {
+router.post("/restore", authenticateAdmin, upload.single("backupFile"), (req, res) => {
   if (!req.file) return res.status(400).send("No file uploaded.");
   const filePath = req.file.path;
   const mysqlPath = `"C:\\xampp\\mysql\\bin\\mysql.exe"`;
