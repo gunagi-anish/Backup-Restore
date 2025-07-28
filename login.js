@@ -1,3 +1,3 @@
 const jwt = require("jsonwebtoken");
-const token = jwt.sign({ role: "admin" }, "your_secret_key", { expiresIn: "1h" });
+const token = jwt.sign({ role: "admin" }, "Anish2004", { expiresIn: "1h" });
 console.log(token);

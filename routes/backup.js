@@ -36,16 +36,24 @@ router.get("/backup", authenticateAdmin, async (req, res) => {
   }
 });
 
-// Restore from uploaded file using native mysql CLI
+const mysql = require("mysql2");
+
 router.post("/restore", authenticateAdmin, upload.single("backupFile"), (req, res) => {
   if (!req.file) return res.status(400).send("No file uploaded.");
-  const filePath = req.file.path;
 
-  const command = `mysql -h ${process.env.DB_HOST} -u ${process.env.DB_USER} -p${process.env.DB_PASSWORD} ${process.env.DB_NAME} < ${filePath}`;
+  const sql = fs.readFileSync(req.file.path, "utf8");
 
-  exec(command, (err) => {
+  const connection = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    multipleStatements: true, // Important for restoring .sql files
+  });
+
+  connection.query(sql, (err, results) => {
     if (err) {
-      console.error("Restore error:", err);
+      console.error("Restore failed:", err);
       return res.status(500).send("Restore failed.");
     }
     res.send("Database restored.");
