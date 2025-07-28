@@ -7,5 +7,15 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "mysql2": "^3.14.2"
-  }
+  },
+  "scripts": {
+  "start": "node app.js"
+  },
+  "name": "backup-restore",
+  "version": "1.0.0",
+  "description": "A simple backup and restore application for books management.",
+  "main": "app.js",
+  "author": "Anish",
+  "license": "ISC"
+
 }
