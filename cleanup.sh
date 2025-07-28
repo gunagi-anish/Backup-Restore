@@ -1,0 +1,1 @@
+find $(dirname "$0")/backups -type f -name "*.sql" -mtime +7 -exec rm {} \;
