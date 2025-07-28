@@ -30,7 +30,6 @@ router.get("/backup", authenticateAdmin, async (req, res) => {
     });
 
     res.download(filePath);
-    res.send(`Backup saved: ${fileName}`);
   } catch (err) {
     console.error("Backup failed:", err);
     res.status(500).send("Backup failed.");
