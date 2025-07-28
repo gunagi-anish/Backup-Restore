@@ -5,9 +5,17 @@ const fs = require("fs");
 require("dotenv").config();
 
 const BACKUP_FOLDER = path.join(__dirname, "..", "backups");
-if (!fs.existsSync(BACKUP_FOLDER)) fs.mkdirSync(BACKUP_FOLDER);
+const LOG_FILE = path.join(__dirname, "..", "logs", "backup.log");
 
-// Utility: Delete .sql files older than 7 days
+if (!fs.existsSync(BACKUP_FOLDER)) fs.mkdirSync(BACKUP_FOLDER);
+if (!fs.existsSync(path.dirname(LOG_FILE))) fs.mkdirSync(path.dirname(LOG_FILE));
+
+function log(message) {
+  const timestamp = new Date().toISOString();
+  const entry = `[${timestamp}] ${message}\n`;
+  fs.appendFileSync(LOG_FILE, entry);
+}
+
 function cleanupOldBackups() {
   const files = fs.readdirSync(BACKUP_FOLDER);
   const now = Date.now();
@@ -21,13 +29,13 @@ function cleanupOldBackups() {
 
       if (age > sevenDays) {
         fs.unlinkSync(filePath);
-        console.log(`🗑️ Deleted old backup: ${file}`);
+        log(`Deleted old backup: ${file}`);
       }
     }
   });
 }
 
-// Schedule: every day at 2:00 AM
+// Schedule: every 15 minutes
 cron.schedule("*/15 * * * *", async () => {
   const fileName = `auto_backup_${Date.now()}.sql`;
   const filePath = path.join(BACKUP_FOLDER, fileName);
@@ -43,11 +51,9 @@ cron.schedule("*/15 * * * *", async () => {
       dumpToFile: filePath,
     });
 
-    console.log(`[Auto Backup] Created: ${fileName}`);
-
-    // Cleanup after backup
+    log(`[Auto Backup] Created: ${fileName}`);
     cleanupOldBackups();
   } catch (err) {
-    console.error("[Auto Backup] Failed:", err.message || err);
+    log(`[Auto Backup] Failed: ${err.message || err}`);
   }
 });
