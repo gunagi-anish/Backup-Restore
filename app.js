@@ -3,6 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const dotenv = require("dotenv");
 dotenv.config();
+require("./scheduler/backupScheduler"); // starts cron job
 
 const bookRoutes = require("./routes/books");
 const backupRoutes = require("./routes/backup");
