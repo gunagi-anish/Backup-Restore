@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const authenticateAdmin = require("../middleware/auth");
 const mysqldump = require("mysqldump");
+const mysql = require("mysql2");
 require("dotenv").config();
 
 const BACKUP_FOLDER = path.join(__dirname, "..", "backups");
@@ -36,27 +37,41 @@ router.get("/backup", authenticateAdmin, async (req, res) => {
   }
 });
 
-const mysql = require("mysql2");
-
+// Restore from uploaded file using mysql2
 router.post("/restore", authenticateAdmin, upload.single("backupFile"), (req, res) => {
   if (!req.file) return res.status(400).send("No file uploaded.");
 
-  const sql = fs.readFileSync(req.file.path, "utf8");
+  let sql = fs.readFileSync(req.file.path, "utf8");
+
+  // Normalize line endings and strip comments
+  sql = sql.replace(/\r\n/g, "\n").trim();
+  sql = sql
+    .split("\n")
+    .filter(line => !line.startsWith("/*!") && !line.startsWith("--") && !line.startsWith("#"))
+    .join("\n");
 
   const connection = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    multipleStatements: true, // Important for restoring .sql files
+    multipleStatements: true,
   });
 
-  connection.query(sql, (err, results) => {
+  connection.connect((err) => {
     if (err) {
-      console.error("Restore failed:", err);
-      return res.status(500).send("Restore failed.");
+      console.error("Connection failed:", err.message);
+      return res.status(500).json({ error: "Connection failed", message: err.message });
     }
-    res.send("Database restored.");
+
+    connection.query(sql, (err, results) => {
+      if (err) {
+        console.error("Restore failed:", err.message || err.sqlMessage || err);
+        return res.status(500).json({ error: "Restore failed", message: err.message || err.sqlMessage || err });
+      }
+
+      res.send("Database restored.");
+    });
   });
 });
 
