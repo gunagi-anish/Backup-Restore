@@ -6,10 +6,11 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "mysql2": "^3.14.2"
+    "mysql2": "^3.14.2",
+    "mysqldump": "^3.2.0"
   },
   "scripts": {
-  "start": "node app.js"
+    "start": "node app.js"
   },
   "name": "backup-restore",
   "version": "1.0.0",
@@ -17,5 +18,4 @@
   "main": "app.js",
   "author": "Anish",
   "license": "ISC"
-
 }
