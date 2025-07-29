@@ -68,6 +68,10 @@ Import the initial schema using a `.sql` file or use the manual backup file prov
 node app.js
 ```
 
+### 6. JWT Authentication
+
+you can create a JWT token by running the login.js script ie. by using node login.js 
+
 The server will start on the configured port (default is 5000).
 
 ## API Endpoints
